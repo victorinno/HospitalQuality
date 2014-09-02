@@ -43,16 +43,14 @@ best <- function(state, outcome) {
 
     
 }
-best("TX", "heart attack")
-best("TX", "heart failure")
-best("MD", "heart attack")
-best("MD", "pneumonia")
-best("BB", "heart attack")
-best("NY", "hert attack")
+#best("TX", "heart attack")
+##best("TX", "heart failure")
+#best("MD", "heart attack")
+#best("MD", "pneumonia")
+#best("BB", "heart attack")
+#best("NY", "hert attack")
 
-usableData <- subset(data, data$State == "AL" & is.numeric(data[,11]))
-usableData[,11] <- as.numeric(usableData[,11])
-usableData <- subset(usableData, !is.na(usableData[,11]))  
+
 
 
 #submit()
