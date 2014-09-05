@@ -21,9 +21,9 @@ rankall <- function(outcome, num = "best"){
             if(num == "best"){
                 return(bestHospital(outcome, data))
             }else if(num ==  "worst"){
-                return(worstHospital(state, outcome, data))
+                return(worstHospital(outcome, data))
             }else{
-                return(limitedBestHospital(state, outcome, data, num))
+                return(limitedBestHospital(outcome, data, num))
             }
         }else{
             stop("invalid outcome")
@@ -43,54 +43,69 @@ bestHospital <- function( outcome, data){
     column <- outcomeOption[outcome]
     
     usableData <- subset(data, 
-                         !is.na(
+                         
                              as.numeric(
                                  data[,column[1,1]]
                              )
-                         )
+                         
     )
     usableData[,column[1,1]] <- as.numeric(usableData[,column[1,1]])
-    rank <-  ddply(usableData, usableData[,column[1,1]], summarize, rank = max(usableData[,column[1,1]]))
-    rank <- rank(rank$x)
-    rank
+    splitData <- split(usableData,usableData$State )
+    res <- data.frame(row.names = c("hospital", "state"));
+
+    for (i in splitData) {
+    #    message(names(i))
+        i[,column[1,1]] <- as.numeric(i[,column[1,1]])
+        orderedI <- i[order(i[,c(column[1,1], 2)], na.last=TRUE) , ]
+        res <- rbind(res, data.frame(hospital = orderedI$Hospital.Name[1], state = orderedI$State[1]))
+    }
+    res
 }
 
 worstHospital <- function(outcome, data){
     column <- outcomeOption[outcome]
     
-    usableData <- subset(data,!is.na(
-                                 as.numeric(
-                                     data[,column[1,1]]
-                             )
-                         )
-    )[,c(2,column[1,1])]
-    usableData[,2] <- as.numeric(usableData[,2])
-    orderUsable <- order(usableData[,2], usableData[,1])
-    res <- usableData[orderUsable,c(1,2)]
-    res[length(res[,1]),1]
+    usableData <- subset(data)
+    usableData[,column[1,1]] <- as.numeric(usableData[,column[1,1]])
+    splitData <- split(usableData,usableData$State )
+    res <- data.frame(row.names = c("hospital", "state"));
+    
+    for (i in splitData) {
+        #    message(names(i))
+        i[,column[1,1]] <- as.numeric(i[,column[1,1]])
+        orderedI <- i[order(i[,c(column[1,1], 2)], na.last=TRUE) ,  ]
+        res <- rbind(res, data.frame(hospital = orderedI$Hospital.Name[orderedI[,column[1,1]] == max(orderedI[,column[1,1]], na.rm = TRUE)], state = orderedI$State[orderedI[,column[1,1]] == max(orderedI[,column[1,1]], na.rm = TRUE)]))
+    }
+    cres <- res[complete.cases(res[,]),]
+    cres[,c(1,2)]
 }
 
-limitedBestHospital <- function(state, outcome, data, num){
+limitedBestHospital <- function(outcome, data, num){
     column <- outcomeOption[outcome]
     
-    usableData <- subset(data, data$State == state 
-                         & !is.na(
-                             as.numeric(
-                                 data[,column[1,1]]
-                             )
-                         )
-    )[,c(2,column[1,1])]
-    usableData[,2] <- as.numeric(usableData[,2])
+    usableData <- data
+    usableData[,column[1,1]] <- as.numeric(usableData[,column[1,1]])
+    splitData <- split(usableData,usableData$State )
+    res <- data.frame(row.names = c("hospital", "state"));
     
-    if(length(usableData[,1]) >= num ){
-        
-        orderUsable <- order(usableData[,2], usableData[,1])
-        res <- usableData[orderUsable,c(1,2)]
-        return(res[num,1])
-    }else{
-        return(NA)
+    for (i in splitData) {
+        #    message(names(i))
+        i[,column[1,1]] <- as.numeric(i[,column[1,1]])
+        orderUse <- order(i[,column[1,1]], i$Hospital.Name, na.last=TRUE)
+        orderedI <- i[orderUse,]
+        res <- rbind(res, data.frame(hospital = orderedI$Hospital.Name[num], state = orderedI$State[1]))
     }
+    res
     
 }
 
-#rankall( "heart failure", "best")
+#rankall("pneumonia", "worst")
+#rankall("heart failure")
+#tail(rankall("pneumonia", "worst"), 3)
+#head(rankall("heart attack", 20), 10)
+#rankall("heart attack", 4)
+#rankall("pneumonia", "worst")
+#tail(rankall("pneumonia", "worst"), 3)
+
+#submit()
+
