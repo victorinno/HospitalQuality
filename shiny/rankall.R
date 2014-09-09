@@ -43,13 +43,7 @@ rankall <- function(outcome, num = "best"){
 bestHospitalAll <- function( outcome, data){
     column <- outcomeOption[outcome]
     
-    usableData <- subset(data, 
-                         
-                             as.numeric(
-                                 data[,column[1,1]]
-                             )
-                         
-    )
+    usableData <- data
     usableData[,column[1,1]] <- as.numeric(usableData[,column[1,1]])
     splitData <- split(usableData,usableData$State )
     res <- data.frame(row.names = c("hospital", "state"));
@@ -66,7 +60,7 @@ bestHospitalAll <- function( outcome, data){
 worstHospitalAll <- function(outcome, data){
     column <- outcomeOption[outcome]
     
-    usableData <- subset(data)
+    usableData <- data
     usableData[,column[1,1]] <- as.numeric(usableData[,column[1,1]])
     splitData <- split(usableData,usableData$State )
     res <- data.frame(row.names = c("hospital", "state"));
